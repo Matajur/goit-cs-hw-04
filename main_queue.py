@@ -37,7 +37,7 @@ def search_keywords_in_files(files: list, keywords: list[str,], result_queue: Qu
     result_queue.put(result)
 
 
-def multithreaded_search(split_files: list[list,], keywords: list[str,]) -> dict:
+def multithreaded_search(split_files: list[list,], keywords: list[str,]):
     """
     Function that provides a multi-threaded search for keywords in files
 
@@ -63,7 +63,7 @@ def multithreaded_search(split_files: list[list,], keywords: list[str,]) -> dict
     return result_queue
 
 
-def multiprocess_search(split_files: list[list,], keywords: list[str,]) -> dict:
+def multiprocess_search(split_files: list[list,], keywords: list[str,]):
     """
     Function that provides a multi-process search for keywords in files
 
@@ -85,6 +85,22 @@ def multiprocess_search(split_files: list[list,], keywords: list[str,]) -> dict:
 
     for process in processes:
         process.join()
+
+    return result_queue
+
+def synchronous_search(split_files: list[list,], keywords: list[str,]):
+    """
+    Function that provides synchronous search for keywords in files
+
+    :param split_files: Collection of several lists of text files to search for keywords
+    :param keywords: List of keywords to search in files
+    :return: Dictionary where keyword is a key and a list of files where
+    that word is found as a value
+    """
+    result_queue = Queue()
+
+    for files_wor_worker in split_files:
+        search_keywords_in_files(files_wor_worker, keywords, result_queue)
 
     return result_queue
 
@@ -130,5 +146,5 @@ def main(search_functions: tuple, directory: str = DIRECTORY) -> None:  # type: 
 
 
 if __name__ == "__main__":
-    search_funcs = (multithreaded_search, multiprocess_search)
+    search_funcs = (multithreaded_search, multiprocess_search, synchronous_search)
     main(search_funcs)

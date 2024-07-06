@@ -37,13 +37,13 @@ def search_keywords_in_files(args: tuple[list, list]) -> dict:
     return results
 
 
-def multithreaded_search(split_files: list[list,], keywords: list[str,]) -> dict:
+def multithreaded_search(split_files: list[list,], keywords: list[str,]):
     """
     Function that provides a multi-threaded search for keywords in files
 
     :param split_files: Collection of several lists of text files to search for keywords
     :param keywords: List of keywords to search in files
-    :return: Dictionary where keyword is a key and a list of files where
+    :return: Iterator with dictionaries where keyword is a key and a list of files where
     that word is found as a value
     """
     with ThreadPoolExecutor(max_workers=len(split_files)) as pool:
@@ -55,13 +55,13 @@ def multithreaded_search(split_files: list[list,], keywords: list[str,]) -> dict
     return results
 
 
-def multiprocess_search(split_files: list[list,], keywords: list[str,]) -> dict:
+def multiprocess_search(split_files: list[list,], keywords: list[str,]):
     """
     Function that provides a multi-process search for keywords in files
 
     :param split_files: Collection of several lists of text files to search for keywords
     :param keywords: List of keywords to search in files
-    :return: Dictionary where keyword is a key and a list of files where
+    :return: Iterator with dictionaries where keyword is a key and a list of files where
     that word is found as a value
     """
     with ProcessPoolExecutor(max_workers=len(split_files)) as pool:
@@ -70,6 +70,23 @@ def multiprocess_search(split_files: list[list,], keywords: list[str,]) -> dict:
             [(files, keywords) for files in split_files],
         )
 
+    return results
+
+
+def synchronous_search(split_files: list[list,], keywords: list[str,]) -> list:
+    """
+    Function that provides synchronous search for keywords in files
+
+    :param split_files: Collection of several lists of text files to search for keywords
+    :param keywords: List of keywords to search in files
+    :return: List of dictionaries where keyword is a key and a list of files where
+    that word is found as a value
+    """
+    results = []
+    for files in split_files:
+        args = (files, keywords)
+        result = search_keywords_in_files(args)
+        results.append(result)
     return results
 
 
@@ -113,5 +130,5 @@ def main(search_functions: tuple, directory: str = DIRECTORY) -> None:  # type: 
 
 
 if __name__ == "__main__":
-    search_funcs = (multithreaded_search, multiprocess_search)
+    search_funcs = (multithreaded_search, multiprocess_search, synchronous_search)
     main(search_funcs)
